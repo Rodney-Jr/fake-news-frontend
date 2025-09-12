@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
-const API_URL = "http://54.81.96.48"; // 👈 backend address
+const API_URL = "http://54.81.96.48"; // backend address
 
 function App() {
   const [title, setTitle] = useState("");
