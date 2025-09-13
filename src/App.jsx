@@ -2,14 +2,33 @@ import React, { useState } from "react";
 
 export default function App() {
   const [inputText, setInputText] = useState("");
+  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleCheck = () => {
-    // For now, mock result — replace this with API call later
-    if (inputText.length % 2 === 0) {
-      setResult("REAL");
-    } else {
-      setResult("FAKE");
+  const handleCheck = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const response = await fetch("http://54.81.96.48/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "News Title", text: inputText }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch result from API");
+      }
+
+      const data = await response.json();
+      setResult(data.label.toUpperCase());
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,13 +69,24 @@ export default function App() {
           ></textarea>
           <button
             onClick={handleCheck}
-            className="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition"
+            disabled={loading}
+            className={`w-full font-semibold py-2 rounded-lg transition ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 text-white hover:bg-indigo-700"
+            }`}
           >
-            Check Authenticity
+            {loading ? "Checking..." : "Check Authenticity"}
           </button>
         </div>
 
         {/* Results Section */}
+        {error && (
+          <div className="mt-6 bg-red-100 text-red-700 p-4 rounded-lg max-w-md w-full text-center">
+            {error}
+          </div>
+        )}
+
         {result && (
           <div className="mt-6 bg-white shadow-md rounded-xl p-6 max-w-md w-full text-center">
             <h3 className="text-lg font-medium text-gray-800">Result:</h3>
